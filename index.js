@@ -27,13 +27,22 @@ async function run() {
 
     const classCollection = client.db("spaceDB").collection("classes");
     const cartCollection = client.db("spaceDB").collection("carts");
+    const userCollection = client.db("spaceDB").collection("users");
 
+    // user related apis
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // class related apis
     app.get("/classes", async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
     });
 
-    // cart collection
+    // cart collection apis
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
       console.log(email);
