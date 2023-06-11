@@ -60,11 +60,26 @@ async function run() {
       res.send({ token });
     });
 
+    // admin middleware
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
       if (user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden access" });
+      }
+      next();
+    };
+
+
+    // Instructor middleware
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "instructor") {
         return res
           .status(403)
           .send({ error: true, message: "forbidden access" });
@@ -140,6 +155,33 @@ async function run() {
       const updateDoc = {
         $set: {
           role: "instructor",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+
+    // student user related apis
+    app.get("/users/student/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ admin: false });
+      }
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const result = { admin: user?.role === "student" };
+      res.send(result);
+    });
+
+    app.patch("/users/student/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "student",
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc);
