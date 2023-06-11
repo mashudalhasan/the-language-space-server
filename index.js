@@ -205,12 +205,25 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/classes/:id", async (req, res) => {
+    app.patch("/classes/approve/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: id };
       const updateDoc = {
         $set: {
-          status: "approved",
+          status: "Approved",
+        },
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+
+    app.patch("/classes/deny/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const updateDoc = {
+        $set: {
+          status: "Denied",
         },
       };
       const result = await classCollection.updateOne(filter, updateDoc);
