@@ -73,7 +73,6 @@ async function run() {
       next();
     };
 
-
     // Instructor middleware
     const verifyInstructor = async (req, res, next) => {
       const email = req.decoded.email;
@@ -88,10 +87,16 @@ async function run() {
     };
 
     // user related apis
-    app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
-    });
+    app.get(
+      "/users",
+      verifyJWT,
+      verifyAdmin,
+      verifyInstructor,
+      async (req, res) => {
+        const result = await userCollection.find().toArray();
+        res.send(result);
+      }
+    );
 
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -161,7 +166,6 @@ async function run() {
       res.send(result);
     });
 
-
     // student user related apis
     app.get("/users/student/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
@@ -198,6 +202,18 @@ async function run() {
     // class related apis
     app.get("/classes", async (req, res) => {
       const result = await classCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const updateDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
