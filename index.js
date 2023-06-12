@@ -205,9 +205,16 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/classes", async (req, res) => {
+      const newClass = req.body;
+      console.log(newClass);
+      const result = await classCollection.insertOne(newClass);
+      res.send(result);
+    });
+
     app.patch("/classes/approve/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: id };
+      const name = req.params.name;
+      const filter = { name: name };
       const updateDoc = {
         $set: {
           status: "Approved",
@@ -217,10 +224,9 @@ async function run() {
       res.send(result);
     });
 
-
     app.patch("/classes/deny/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: id };
+      const name = req.params.name;
+      const filter = { name: name };
       const updateDoc = {
         $set: {
           status: "Denied",
@@ -228,6 +234,21 @@ async function run() {
       };
       const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
+    });
+
+    app.patch("/classes/feedback/:id", async (req, res) => {
+      const name = req.params.name;
+      const filter = { name: name };
+      const feedback = req.body.feedback;
+      console.log("Class Name:", name);
+      console.log("Feedback:", feedback);
+      const updateDoc = {
+        $set: {
+          feedback: feedback,
+        },
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.json(result);
     });
 
     // cart collection apis
