@@ -87,16 +87,10 @@ async function run() {
     };
 
     // user related apis
-    app.get(
-      "/users",
-      verifyJWT,
-      verifyAdmin,
-      verifyInstructor,
-      async (req, res) => {
-        const result = await userCollection.find().toArray();
-        res.send(result);
-      }
-    );
+    app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -209,6 +203,34 @@ async function run() {
       const newClass = req.body;
       console.log(newClass);
       const result = await classCollection.insertOne(newClass);
+      res.send(result);
+    });
+
+    app.get("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.put("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedClass = req.body;
+      const uniqueClass = {
+        $set: {
+          price: parseInt(updatedClass.price),
+          class_image: updatedClass.class_image,
+          available_seats: parseInt(updatedClass.available_seats),
+        },
+      };
+
+      const result = await classCollection.updateOne(
+        filter,
+        uniqueClass,
+        options
+      );
       res.send(result);
     });
 
