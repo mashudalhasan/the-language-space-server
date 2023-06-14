@@ -53,6 +53,7 @@ async function run() {
     const userCollection = client.db("spaceDB").collection("users");
     const paymentCollection = client.db("spaceDB").collection("payments");
     const enrolledCollection = client.db("spaceDB").collection("enrolled");
+    const reviewCollection = client.db("spaceDB").collection("reviews");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -339,6 +340,12 @@ async function run() {
       res.send(result);
     });
 
+    // reviews related apis
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+
     // create payment intent
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { price } = req.body;
@@ -395,7 +402,7 @@ async function run() {
     app.get("/payment/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
-      const result = await paymentCollection.findOne(query);
+      const result = await paymentCollection.find(query).toArray();
       res.send(result);
     });
 
