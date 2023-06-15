@@ -285,25 +285,31 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/classes/feedback/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
+    // POST route to handle adding feedback to a class
+    app.post("/classes/feedback/:id", (req, res) => {
+      const { id } = req.params;
+      const { feedback } = req.body;
 
-      if (!ObjectId.isValid(id)) {
-        res.status(400).json({ error: "Invalid ID format" });
-        return;
-      }
+      // Convert the ID string to ObjectID
+      const objectId = new ObjectId(id);
 
-      const feedback = JSON.parse(req.body.feedback);
-      console.log("Class ID:", id);
-      console.log("Feedback:", feedback);
-      const updateDoc = {
-        $set: {
-          feedback: feedback,
-        },
-      };
-      const result = await classCollection.updateOne(filter, updateDoc);
-      res.json(result);
+      // Update the document based on its _id
+      classCollection
+        .updateOne({ _id: objectId }, { $set: { feedback: feedback } })
+        .then(() => {
+          // Find the updated document
+          classCollection.findOne({ _id: objectId }).then((updatedClass) => {
+            if (updatedClass) {
+              res.send(updatedClass);
+            } else {
+              res.status(404).json({ error: "Class not found" });
+            }
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).json({ error: "Internal server error" });
+        });
     });
 
     // cart collection apis
